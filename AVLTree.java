@@ -348,20 +348,88 @@ class LUC_AVLTree {
          * 
          * NOTE, that you should use the existing coded private methods
          * in this file, which include:
-         *      - minValueNode,
-         *      - getMaxHeight,
-         *      - getHeight,
-         *      - getBalanceFactor,
-         *      - LLRotation
-         *      - RRRotation,
-         *      - LRRotation,
-         *      - RLRotation.
+         *      - minValueNode, done
+         *      - getMaxHeight, done
+         *      - getHeight, done
+         *      - getBalanceFactor, done
+         *      - LLRotation done
+         *      - RRRotation, done
+         *      - LRRotation, done
+         *      - RLRotation. done
          *
          * To understand what each of these methods do, see the method prologues and
          * code for each. You can also look at the method InsertElement, as it has do
          * do many of the same things as this method.
          */
 
+        /*
+        Code for assignment:
+         */
+
+        // Incase node is null
+        if (node == null) {
+            return null;
+        }
+
+        // Recursively search the tree
+        if (value < node.value) {
+            node.leftChild = deleteElement(value, node.leftChild);
+        } else if (value > node.value) {
+            node.rightChild = deleteElement(value, node.rightChild);
+        }
+
+        // The value matches the input, so delete current node:
+        else {
+            // Scenario 1 (leaf)
+            if (node.leftChild == null && node.rightChild == null) {
+                return null;
+            }
+
+            // Scenario 2: interior node with only right subtree below it
+            else if (node.leftChild == null) {
+                return node.rightChild;
+            }
+
+            // Scenario 3: interior node with only left subtree below it
+            else if (node.rightChild == null) {
+                return node.leftChild;
+            }
+            // Scenario 4: node with both subtrees
+            else {
+                // Find the inorder successor with the smallest node in the right tree
+                Node minNode = minValueNode(node.rightChild);
+                node.value = minNode.value;
+                node.rightChild = deleteElement(minNode.value, node.rightChild);
+            }
+        }
+
+        // Update height of the node now that it has been deleted
+        node.height = getMaxHeight(getHeight(node.leftChild), getHeight(node.rightChild)) + 1;
+
+        // Check if the tree is balanced:
+        int balance = getBalanceFactor(node);
+
+        // If left-heavy, either rotate LL or LR to fix the balance
+        if (balance > 1) {
+            if (getBalanceFactor(node.leftChild) >= 0) {
+                // Left-Left rotation
+                return LLRotation(node);
+            }
+            else {
+                // Left-Right rotation
+                return LRRotation(node);
+            }
+        }
+        // If right-heavy, rotate RR or RL to fix balance
+        if (balance < -1) {
+            if (getBalanceFactor(node.rightChild) <= 0) {
+                return RRRotation(node);
+            } else {
+                return RLRotation(node);
+            }
+        }
+
+        // It should be balanced now, so return the node
         return node;
     }
 
